@@ -36,6 +36,28 @@ npm version patch|minor
 npm publish
 ```
 
+## 日常发版
+
+```sh
+npm run check                 # 语法自检
+npm version patch -m "v%s"    # 升版本 + 打 tag（minor / major 同理）
+npm publish                   # 会弹网页授权
+git push --follow-tags
+```
+
+发布后想立刻验证“别人装到的版本”：
+
+```sh
+plugin_manager → remove_bundle  → dsh-stock-strip
+plugin_manager → install_bundle → dsh-stock-strip@<新版本>
+```
+
+本地开发期间建议装回 `link:`，改代码刷新即生效、不用每次发版：
+
+```sh
+plugin_manager → install_bundle → /Users/<you>/Atelier/dsh-stock-strip
+```
+
 ## 3. 提交收录（awesome-dsh-plugin）
 
 列表由 `data/plugins/*.yml` 生成，**一个插件一个文件**，一个 PR 只加一个文件：
