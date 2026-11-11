@@ -1,0 +1,8 @@
+# Bundle patch layer for dsh-stock-strip.
+#
+# One loader row: the Host half (index.js) is an empty placeholder, and the
+# package's `dsh.client` declaration makes the Web app load `./client`, which
+# paints the bottom quote strip.
+- insert:
+    - id: stock-strip
+      name: 'dsh-stock-strip'

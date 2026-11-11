@@ -1,0 +1,50 @@
+{
+  "name": "dsh-stock-strip",
+  "version": "0.1.0",
+  "description": "A thin always-on quote bar at the bottom of DeepSeek Harness: watchlist price and per-position P&L, red up / green down, no charts and no clicks.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "LICENSE",
+    "preview"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "deepseek",
+    "stock",
+    "stocks",
+    "quotes",
+    "ticker",
+    "a-share",
+    "portfolio",
+    "pnl"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "check": "node --check index.js && node --check client.js",
+    "prepublishOnly": "npm run check"
+  },
+  "dsh": {
+    "engines": {
+      "dsh": ">=0.2.0"
+    },
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  }
+}
