@@ -1,7 +1,7 @@
 {
   "name": "dsh-stock-strip",
   "version": "0.1.0",
-  "description": "A thin always-on quote bar at the bottom of DeepSeek Harness: watchlist price and per-position P&L, red up / green down, no charts and no clicks.",
+  "description": "A thin always-on quote bar at the bottom of DeepSeek Harness showing watchlist prices and per-position P&L, with configurable fields and an automatic two-row layout.",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -46,5 +46,14 @@
       "platform": "web",
       "immediately": true
     }
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AAACherryCandy/dsh-stock-strip.git"
+  },
+  "homepage": "https://github.com/AAACherryCandy/dsh-stock-strip#readme",
+  "bugs": {
+    "url": "https://github.com/AAACherryCandy/dsh-stock-strip/issues"
+  },
+  "author": "AAACherryCandy"
 }

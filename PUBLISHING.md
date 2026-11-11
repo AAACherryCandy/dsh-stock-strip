@@ -19,9 +19,7 @@ npm pack --dry-run     # 看包里到底装了什么
 - 把 `package.json` 里的 `repository` / `homepage` / `bugs` 补上：
 
 ```json
-"repository": { "type": "git", "url": "git+https://github.com/<owner>/dsh-stock-strip.git" },
-"homepage": "https://github.com/<owner>/dsh-stock-strip#readme",
-"bugs": { "url": "https://github.com/<owner>/dsh-stock-strip/issues" }
+"repository": { "type": "git", "url": "git+https://github.com/AAACherryCandy/dsh-stock-strip.git" }  ← 已填好
 ```
 
 ## 2. 发 npm
@@ -42,16 +40,16 @@ npm publish
 
 列表由 `data/plugins/*.yml` 生成，**一个插件一个文件**，一个 PR 只加一个文件：
 
-`data/plugins/<owner>__dsh-stock-strip.yml`
+`data/plugins/AAACherryCandy__dsh-stock-strip.yml`
 
 ```yaml
-url: https://github.com/<owner>/dsh-stock-strip
-name: <owner>/dsh-stock-strip
+url: https://github.com/AAACherryCandy/dsh-stock-strip
+name: AAACherryCandy/dsh-stock-strip
 category: ui          # 或 usage，取更贴切的一个
 description:
   en: A thin always-on quote bar at the bottom of DeepSeek Harness showing watchlist prices and per-position P&L, with configurable fields and a two-row layout.
   zh: 贴在 DeepSeek Harness 底边的一条常驻行情条，显示自选股价格与每只持仓的浮动盈亏，字段可勾选、放不下自动变两行。
-icon: https://raw.githubusercontent.com/<owner>/dsh-stock-strip/main/preview/icon-180.png
+icon: https://raw.githubusercontent.com/AAACherryCandy/dsh-stock-strip/main/preview/icon-180.png
 ```
 
 注意：
