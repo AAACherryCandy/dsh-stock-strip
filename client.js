@@ -31,6 +31,7 @@ window.__ModuleLoader__.load({
       positions: [],
       onlyPositions: true,
       rows: 'auto',
+      lang: 'auto',
       showSummary: true,
       fields: {
         price: false,
@@ -48,6 +49,133 @@ window.__ModuleLoader__.load({
     };
 
     const CURRENCY_SIGN = { CNY: '¥', HKD: 'HK$', USD: '$' };
+    /* ------------------------------------------------------------------ */
+    /* i18n                                                                */
+    /* ------------------------------------------------------------------ */
+
+    const STRINGS = {
+      zh: {
+        gearTitle: '自选股、持仓与刷新频率',
+        noSymbols: '未配置自选股',
+        unavailable: '行情暂不可用',
+        summary: '持仓',
+        tagTotal: '总',
+        tagDay: '今',
+        tagValue: '值',
+        tagCost: '本',
+        shares: '股',
+        cost: '成本',
+        value: '市值',
+        totalPnl: '总盈亏',
+        dayPnl: '当日',
+        pnlRate: '盈亏率',
+        panelTitle: '底边行情条',
+        langLabel: '语言',
+        langAuto: '自动',
+        watchHint: '自选股（逗号或换行分隔）：600519 / sh600519 / 00700 / AAPL / BK1036 / 1.600519',
+        positionsHint: '持仓（每行：代码 股数 成本价，换行或分号分隔；不填则不显示盈亏）',
+        interval: '刷新间隔（秒）',
+        rows: '行数',
+        rowsAuto: '自动（一行放不下就变两行）',
+        rowsOne: '单行',
+        rowsTwo: '两行',
+        onlyPositions: '只显示持仓（不然还会带上自选股里的指数等）',
+        showSummary: '显示左侧「持仓」汇总（关掉能给行情条腾出宽度）',
+        fieldsHint: '显示字段（按顺序拼接；持仓类只对有仓位的票生效；涨跌幅即当日盈亏比）',
+        save: '保存',
+        cancel: '取消',
+        errNoCodes: '自选股没认出任何代码，检查一下写法',
+        errRow: (n, line) => '持仓第 ' + n + ' 行「' + line + '」：要写成 代码 股数 成本价',
+        errCode: (n, code) => '持仓第 ' + n + ' 行：认不出代码「' + code + '」',
+        errNumbers: (n, line) => '持仓第 ' + n + ' 行「' + line + '」：股数和成本价要是大于 0 的数字',
+        yi: '亿',
+        wan: '万',
+        fieldNames: {
+          price: '股价',
+          change: '涨跌幅',
+          changeAmount: '涨跌额',
+          amount: '成交额',
+          turnover: '换手率',
+          totalPnl: '总盈亏',
+          totalPct: '总盈亏比',
+          dayPnl: '当日盈亏',
+          marketValue: '持仓市值',
+          costPrice: '成本价',
+          shares: '股数',
+        },
+      },
+      en: {
+        gearTitle: 'Watchlist, positions and refresh rate',
+        noSymbols: 'No symbols configured',
+        unavailable: 'Quotes unavailable',
+        summary: 'Positions',
+        tagTotal: 'T',
+        tagDay: 'D',
+        tagValue: 'V',
+        tagCost: 'C',
+        shares: 'sh',
+        cost: 'Cost',
+        value: 'Value',
+        totalPnl: 'Total P&L',
+        dayPnl: 'Today',
+        pnlRate: 'Return',
+        panelTitle: 'Bottom quote strip',
+        langLabel: 'Language',
+        langAuto: 'Auto',
+        watchHint: 'Watchlist (comma or newline separated): 600519 / sh600519 / 00700 / AAPL / BK1036 / 1.600519',
+        positionsHint: 'Positions (one per line: CODE SHARES COST; newline or semicolon separated; leave empty for quotes only)',
+        interval: 'Refresh (seconds)',
+        rows: 'Rows',
+        rowsAuto: 'Auto (two rows when one does not fit)',
+        rowsOne: 'One row',
+        rowsTwo: 'Two rows',
+        onlyPositions: 'Positions only (skip indices and other watchlist symbols)',
+        showSummary: 'Show the left-hand positions total (turn off for more width)',
+        fieldsHint: 'Fields, joined in this order. Position fields only apply to held symbols; change % is the same number as today\'s return.',
+        save: 'Save',
+        cancel: 'Cancel',
+        errNoCodes: 'No valid symbol in the watchlist — check the format',
+        errRow: (n, line) => 'Line ' + n + ' "' + line + '": expected CODE SHARES COST',
+        errCode: (n, code) => 'Line ' + n + ': unknown symbol "' + code + '"',
+        errNumbers: (n, line) => 'Line ' + n + ' "' + line + '": shares and cost must be numbers greater than 0',
+        yi: 'B',
+        wan: 'M',
+        fieldNames: {
+          price: 'Price',
+          change: 'Change %',
+          changeAmount: 'Change',
+          amount: 'Turnover',
+          turnover: 'Turnover rate',
+          totalPnl: 'Total P&L',
+          totalPct: 'Total return',
+          dayPnl: 'Today P&L',
+          marketValue: 'Market value',
+          costPrice: 'Cost',
+          shares: 'Shares',
+        },
+      },
+    };
+
+    /** Resolved UI language; refreshed whenever prefs change. */
+    let lang = 'en';
+
+    function resolveLang(preference) {
+      if (preference === 'zh' || preference === 'en') return preference;
+      const nav = (typeof navigator !== 'undefined' && navigator.language) || 'en';
+      return String(nav).toLowerCase().startsWith('zh') ? 'zh' : 'en';
+    }
+
+    function t(key) {
+      const table = STRINGS[lang] || STRINGS.en;
+      return table[key];
+    }
+
+    function tf(key, ...args) {
+      const table = STRINGS[lang] || STRINGS.en;
+      const value = table[key];
+      return typeof value === 'function' ? value(...args) : value;
+    }
+
     /* Every switchable column, in render order. */
     const FIELD_KEYS = [
       'price',
@@ -123,6 +251,7 @@ window.__ModuleLoader__.load({
         positions: [],
         onlyPositions: DEFAULTS.onlyPositions,
         rows: DEFAULTS.rows,
+        lang: DEFAULTS.lang,
         showSummary: DEFAULTS.showSummary,
         fields: { ...DEFAULTS.fields },
       };
@@ -139,6 +268,7 @@ window.__ModuleLoader__.load({
           positions: normalisePositions(parsed.positions),
           onlyPositions: parsed.onlyPositions !== false,
           rows: parsed.rows === 1 || parsed.rows === 2 ? parsed.rows : 'auto',
+          lang: parsed.lang === 'zh' || parsed.lang === 'en' ? parsed.lang : 'auto',
           showSummary: parsed.showSummary !== false,
           fields: normaliseFields(parsed),
         };
@@ -519,8 +649,14 @@ window.__ModuleLoader__.load({
     function formatAmountCN(value) {
       if (!Number.isFinite(value)) return '—';
       const abs = Math.abs(value);
-      if (abs >= 1e8) return (abs / 1e8).toFixed(2) + '亿';
-      if (abs >= 1e4) return Math.round(abs / 1e4) + '万';
+      if (lang === 'en') {
+        if (abs >= 1e9) return (abs / 1e9).toFixed(2) + 'B';
+        if (abs >= 1e6) return (abs / 1e6).toFixed(1) + 'M';
+        if (abs >= 1e3) return Math.round(abs / 1e3) + 'K';
+        return String(Math.round(abs));
+      }
+      if (abs >= 1e8) return (abs / 1e8).toFixed(2) + t('yi');
+      if (abs >= 1e4) return Math.round(abs / 1e4) + t('wan');
       return String(Math.round(abs));
     }
 
@@ -677,6 +813,7 @@ window.__ModuleLoader__.load({
       if (!body) return;
 
       let prefs = readPrefs();
+      lang = resolveLang(prefs.lang);
       let watchSymbols = resolveList(prefs.codes);
       let positions = resolvePositions(prefs.positions);
       let symbols = computeDisplay(watchSymbols, positions, prefs.onlyPositions);
@@ -709,7 +846,7 @@ window.__ModuleLoader__.load({
       const gear = document.createElement('button');
       gear.className = 'dss-gear';
       gear.type = 'button';
-      gear.title = '自选股、持仓与刷新频率';
+      gear.title = t('gearTitle');
       gear.textContent = '⚙';
 
       viewport.append(track);
@@ -826,41 +963,32 @@ window.__ModuleLoader__.load({
           /* Mixed currencies keep the symbol per cell; a single one shows it in the summary. */
           const symbolFor = singleCurrency ? null : pnl.currency;
           const day = fields.dayPnl ? dayPnlOf(pnl, row) : null;
-          if (fields.totalPnl) cells.push(buildCell('dss-pnl dss-' + pdir, tag('总', signedMoneyShort(pnl.pnl, symbolFor))));
+          if (fields.totalPnl) cells.push(buildCell('dss-pnl dss-' + pdir, tag(t('tagTotal'), signedMoneyShort(pnl.pnl, symbolFor))));
           if (fields.totalPct) {
-            cells.push(buildCell('dss-pnl-rate dss-' + pdir, tag('总', formatPctShort(pnl.pct))));
+            cells.push(buildCell('dss-pnl-rate dss-' + pdir, tag(t('tagTotal'), formatPctShort(pnl.pct))));
           }
           if (fields.dayPnl) {
             cells.push(
               buildCell(
                 'dss-day dss-' + (day ? directionOf(day.amount) : 'flat'),
-                day ? tag('今', signedMoneyShort(day.amount, symbolFor)) : '—',
+                day ? tag(t('tagDay'), signedMoneyShort(day.amount, symbolFor)) : '—',
               ),
             );
           }
-          if (fields.marketValue) cells.push(buildCell('dss-dim', tag('值', moneyWithCurrency(pnl.value, pnl.currency))));
-          if (fields.costPrice) cells.push(buildCell('dss-dim', tag('本', formatCost(pnl.costPrice))));
-          if (fields.shares) cells.push(buildCell('dss-dim', groupInteger(String(pnl.shares)) + '股'));
+          if (fields.marketValue) cells.push(buildCell('dss-dim', tag(t('tagValue'), moneyWithCurrency(pnl.value, pnl.currency))));
+          if (fields.costPrice) cells.push(buildCell('dss-dim', tag(t('tagCost'), formatCost(pnl.costPrice))));
+          if (fields.shares) cells.push(buildCell('dss-dim', groupInteger(String(pnl.shares)) + t('shares')));
 
-          item.title =
-            '成本 ' +
-            formatCost(pnl.costPrice) +
-            ' × ' +
-            groupInteger(String(pnl.shares)) +
-            ' 股 · 市值 ' +
-            moneyWithCurrency(pnl.value, pnl.currency) +
-            ' · 总盈亏 ' +
-            signedMoney(pnl.pnl, pnl.currency) +
-            ' (' +
-            formatPct(pnl.pct) +
-            ')' +
-            (dayPnlOf(pnl, row)
-              ? ' · 当日 ' +
-                signedMoney(dayPnlOf(pnl, row).amount, pnl.currency) +
-                ' (' +
-                formatPct(dayPnlOf(pnl, row).pct) +
-                ')'
-              : '');
+          const dayInfo = dayPnlOf(pnl, row);
+          const detail = [
+            t('cost') + ' ' + formatCost(pnl.costPrice) + ' × ' + groupInteger(String(pnl.shares)) + ' ' + t('shares'),
+            t('value') + ' ' + moneyWithCurrency(pnl.value, pnl.currency),
+            t('totalPnl') + ' ' + signedMoney(pnl.pnl, pnl.currency) + ' (' + formatPct(pnl.pct) + ')',
+          ];
+          if (dayInfo) {
+            detail.push(t('dayPnl') + ' ' + signedMoney(dayInfo.amount, pnl.currency) + ' (' + formatPct(dayInfo.pct) + ')');
+          }
+          item.title = detail.join(' · ');
         }
 
         cells.forEach((node, index) => {
@@ -885,7 +1013,7 @@ window.__ModuleLoader__.load({
         }
         const label = document.createElement('span');
         label.className = 'dss-sum-label';
-        label.textContent = '持仓';
+        label.textContent = t('summary');
         summary.append(label);
 
         const single = entries.length === 1;
@@ -899,7 +1027,8 @@ window.__ModuleLoader__.load({
             symbol +
             formatMoneyShort(total.pnl) +
             (single && pct ? ' (' + pct + ')' : '');
-          chip.title = '成本 ' + formatMoney(total.cost) + ' ' + currency + (pct ? ' · 盈亏率 ' + pct : '');
+          chip.title =
+            t('cost') + ' ' + formatMoney(total.cost) + ' ' + currency + (pct ? ' · ' + t('pnlRate') + ' ' + pct : '');
           summary.append(chip);
         }
         summary.classList.add('dss-on');
@@ -927,7 +1056,7 @@ window.__ModuleLoader__.load({
 
         if (!symbols.length) {
           track.textContent = '';
-          status.textContent = '未配置自选股';
+          status.textContent = t('noSymbols');
           status.classList.remove('dss-error');
           return;
         }
@@ -1020,11 +1149,29 @@ window.__ModuleLoader__.load({
 
         const title = document.createElement('div');
         title.className = 'dss-panel-title';
-        title.textContent = '底边行情条';
+        title.textContent = t('panelTitle');
+
+        const langRow = document.createElement('label');
+        langRow.className = 'dss-row';
+        const langLabel = document.createElement('span');
+        langLabel.textContent = t('langLabel');
+        const langSelect = document.createElement('select');
+        for (const [value, text] of [
+          ['auto', t('langAuto')],
+          ['zh', '中文'],
+          ['en', 'English'],
+        ]) {
+          const option = document.createElement('option');
+          option.value = value;
+          option.textContent = text;
+          langSelect.append(option);
+        }
+        langSelect.value = prefs.lang || 'auto';
+        langRow.append(langLabel, langSelect);
 
         const hint = document.createElement('div');
         hint.className = 'dss-panel-hint';
-        hint.textContent = '自选股（逗号或换行分隔）：600519 / sh600519 / 00700 / AAPL / BK1036 / 1.600519';
+        hint.textContent = t('watchHint');
 
         const area = document.createElement('textarea');
         area.rows = 3;
@@ -1033,7 +1180,7 @@ window.__ModuleLoader__.load({
 
         const posHint = document.createElement('div');
         posHint.className = 'dss-panel-hint';
-        posHint.textContent = '持仓（每行：代码 股数 成本价，换行或分号分隔；不填则不显示盈亏）';
+        posHint.textContent = t('positionsHint');
 
         const posArea = document.createElement('textarea');
         posArea.rows = Math.min(6, Math.max(3, prefs.positions.length + 1));
@@ -1044,7 +1191,7 @@ window.__ModuleLoader__.load({
         const row = document.createElement('div');
         row.className = 'dss-row';
         const rowLabel = document.createElement('span');
-        rowLabel.textContent = '刷新间隔（秒）';
+        rowLabel.textContent = t('interval');
         const interval = document.createElement('input');
         interval.type = 'number';
         interval.min = '5';
@@ -1056,12 +1203,12 @@ window.__ModuleLoader__.load({
         const rowsRow = document.createElement('label');
         rowsRow.className = 'dss-row';
         const rowsLabel = document.createElement('span');
-        rowsLabel.textContent = '行数';
+        rowsLabel.textContent = t('rows');
         const rowsSelect = document.createElement('select');
         for (const [value, text] of [
-          ['auto', '自动（一行放不下就变两行）'],
-          ['1', '单行'],
-          ['2', '两行'],
+          ['auto', t('rowsAuto')],
+          ['1', t('rowsOne')],
+          ['2', t('rowsTwo')],
         ]) {
           const option = document.createElement('option');
           option.value = value;
@@ -1077,7 +1224,7 @@ window.__ModuleLoader__.load({
         onlyBox.type = 'checkbox';
         onlyBox.checked = prefs.onlyPositions !== false;
         const onlyLabel = document.createElement('span');
-        onlyLabel.textContent = '只显示持仓（不然还会带上自选股里的指数等）';
+        onlyLabel.textContent = t('onlyPositions');
         onlyRow.append(onlyBox, onlyLabel);
 
         const sumRow = document.createElement('label');
@@ -1086,28 +1233,17 @@ window.__ModuleLoader__.load({
         sumBox.type = 'checkbox';
         sumBox.checked = prefs.showSummary !== false;
         const sumLabel = document.createElement('span');
-        sumLabel.textContent = '显示左侧「持仓」汇总（关掉能给行情条腾出宽度）';
+        sumLabel.textContent = t('showSummary');
         sumRow.append(sumBox, sumLabel);
 
         const fieldHint = document.createElement('div');
         fieldHint.className = 'dss-panel-hint';
-        fieldHint.textContent = '显示字段（按顺序拼接；持仓类只对有仓位的票生效；涨跌幅即当日盈亏比）';
+        fieldHint.textContent = t('fieldsHint');
 
         const fieldsWrap = document.createElement('div');
         fieldsWrap.className = 'dss-fields';
-        for (const [key, text] of [
-          ['price', '股价'],
-          ['change', '涨跌幅'],
-          ['changeAmount', '涨跌额'],
-          ['amount', '成交额'],
-          ['turnover', '换手率'],
-          ['totalPnl', '总盈亏'],
-          ['totalPct', '总盈亏比'],
-          ['dayPnl', '当日盈亏'],
-          ['marketValue', '持仓市值'],
-          ['costPrice', '成本价'],
-          ['shares', '股数'],
-        ]) {
+        for (const key of FIELD_KEYS) {
+          const text = t('fieldNames')[key];
           const wrap = document.createElement('label');
           wrap.className = 'dss-field';
           const box = document.createElement('input');
@@ -1125,17 +1261,17 @@ window.__ModuleLoader__.load({
         const cancel = document.createElement('button');
         cancel.type = 'button';
         cancel.className = 'dss-btn';
-        cancel.textContent = '取消';
+        cancel.textContent = t('cancel');
         const save = document.createElement('button');
         save.type = 'button';
         save.className = 'dss-btn dss-btn-primary';
-        save.textContent = '保存';
+        save.textContent = t('save');
         actions.append(cancel, save);
 
         const error = document.createElement('div');
         error.className = 'dss-panel-hint dss-error';
 
-        panel.append(title, hint, area, posHint, posArea, row, rowsRow, onlyRow, sumRow, fieldHint, fieldsWrap, actions, error);
+        panel.append(title, langRow, hint, area, posHint, posArea, row, rowsRow, onlyRow, sumRow, fieldHint, fieldsWrap, actions, error);
         body.append(panel);
 
         cancel.addEventListener('click', closePanel);
@@ -1148,7 +1284,7 @@ window.__ModuleLoader__.load({
             .filter(Boolean);
           const nextWatch = resolveList(codes);
           if (!nextWatch.length) {
-            error.textContent = '自选股没认出任何代码，检查一下写法';
+            error.textContent = t('errNoCodes');
             return;
           }
 
@@ -1160,19 +1296,18 @@ window.__ModuleLoader__.load({
             if (!line) continue;
             const parts = splitPositionRow(line);
             if (parts.length < 3) {
-              error.textContent = '持仓第 ' + (index + 1) + ' 行「' + line + '」：要写成 代码 股数 成本价';
+              error.textContent = tf('errRow', index + 1, line);
               return;
             }
             const code = parts[0];
             if (!resolveSymbol(code)) {
-              error.textContent = '持仓第 ' + (index + 1) + ' 行：认不出代码「' + code + '」';
+              error.textContent = tf('errCode', index + 1, code);
               return;
             }
             const shares = parseNumberField(parts[1]);
             const cost = parseNumberField(parts[2]);
             if (!(shares > 0) || !(cost > 0)) {
-              error.textContent =
-                '持仓第 ' + (index + 1) + ' 行「' + line + '」：股数和成本价要是大于 0 的数字';
+              error.textContent = tf('errNumbers', index + 1, line);
               return;
             }
             parsedPositions.push({ code, shares, cost });
@@ -1184,10 +1319,12 @@ window.__ModuleLoader__.load({
             positions: parsedPositions,
             onlyPositions: onlyBox.checked,
             rows: rowsSelect.value === '1' ? 1 : rowsSelect.value === '2' ? 2 : 'auto',
+            lang: langSelect.value,
             showSummary: sumBox.checked,
             fields: readFieldBoxes(fieldsWrap),
           };
           writePrefs(prefs);
+          lang = resolveLang(prefs.lang);
           watchSymbols = nextWatch;
           positions = resolvePositions(parsedPositions);
           symbols = computeDisplay(watchSymbols, positions, prefs.onlyPositions);
@@ -1235,12 +1372,12 @@ window.__ModuleLoader__.load({
             status.classList.remove('dss-error');
             render(quotes);
           } else if (!painted) {
-            status.textContent = '行情暂不可用';
+            status.textContent = t('unavailable');
             status.classList.add('dss-error');
           }
         } catch {
           if (!painted) {
-            status.textContent = '行情暂不可用';
+            status.textContent = t('unavailable');
             status.classList.add('dss-error');
           }
         } finally {

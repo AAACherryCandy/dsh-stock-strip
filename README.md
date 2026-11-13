@@ -2,47 +2,44 @@
 
 A thin, always-on quote bar pinned to the bottom edge of DeepSeek Harness: watchlist price,
 change, and — once you enter a position — its unrealised P&L. Red up / green down, no charts,
-nothing to click open.
+nothing to click open. Interface in English or 中文, picked from your browser (switchable in settings).
 
-贴在 DeepSeek Harness 窗口最底下的一条行情条：`名称 现价 ▲+1.23%`，有仓位时再带累计浮动盈亏，
-红涨绿跌，不用点开、没有 K 线。
+![English UI](preview/hero-en.png)
 
-![底边条](preview/light.png)
+## What it does
 
-![设置面板](preview/settings.png)
+- **One line, out of the way**: pinned to the bottom; the transcript and composer shrink to make room.
+- **10 s refresh by default**, drops to 60 s while the page is hidden, refreshes immediately on return.
+- **Falls back to two rows instead of scrolling**: if one row does not fit, cells split into two
+  half-width rows; only when even that overflows does it scroll slowly.
+- **Pick your fields**: price, change %, change, turnover, turnover rate, total P&L, total return,
+  today's P&L, market value, cost, shares — any subset, in a fixed order.
+- **Positions only** (default on): once you enter holdings, indices and other watchlist symbols
+  are dropped from the bar.
+- Refresh interval 5–120 s; hover pauses the scroll.
 
-## 它能做什么
-
-- **常驻一行，不打断工作**：固定在最底边，正文和输入框会为它让出高度，不遮挡任何东西。
-- **默认 10 秒一轮**：页面切到后台自动降到 60 秒，切回前台立刻补一次。
-- **放不下就变两行**：单行装不下时自动切成两行（不滚动）；两行也塞不下才退回单行慢速滚动。
-- **按需显示字段**：股价、涨跌幅、涨跌额、成交额、换手率、总盈亏、总盈亏比、当日盈亏、
-  持仓市值、成本价、股数，勾哪个显示哪个。
-- **只看持仓**：配了持仓就只画持仓票，不把自选里的指数一起摊上去。
-- **可配置刷新间隔** 5–120 秒；悬停暂停滚动。
-
-## 安装
+## Install
 
 ```sh
-# 在 DSH 会话里
+# inside a DSH session
 plugin_manager → action: install_bundle → target: dsh-stock-strip
 ```
 
-或命令行：
+or from the CLI:
 
 ```sh
 dsh plugin --profile desktop add dsh-stock-strip
 ```
 
-装完刷新一次页面即生效。卸载：
+Refresh the page once. Uninstall:
 
 ```sh
 plugin_manager → action: remove_bundle → target: dsh-stock-strip
 ```
 
-## 持仓与浮动盈亏
+## Positions and P&L
 
-在 ⚙ 的「持仓」里一行一只：**代码 股数 成本价**
+Open ⚙ → **Positions**, one per line: **CODE SHARES COST**
 
 ```
 600519 100 1580.5
@@ -50,83 +47,84 @@ plugin_manager → action: remove_bundle → target: dsh-stock-strip
 300750 300 260
 ```
 
-- 行之间用换行或分号（`;` / `；`），字段之间用空格（也认 `、` 和全角 `，`）；
-  数字里带千分位、`¥`、`$` 都能识别，比如 `518880，6,200，¥8.787`。
-- 每行的浮盈 = `(现价 − 成本价) × 股数`，盈亏率 = `浮盈 ÷ (成本价 × 股数)`。
-- 条上显示「金额 · 盈亏率」，例如 `-3,087.60 · -5.67%`，鼠标悬停看成本 / 股数 / 市值明细。
-  **金额保留到分、比率保留两位**，不做取整或省位。
-- 左侧固定一格「持仓」显示汇总：单一币种时带盈亏率，比如 `-¥17,745.60 (-6.91%)`。
-- **不做汇率换算**：A 股按 CNY、港股按 HKD、美股按 USD 各自汇总，分别显示，
-  混着持有时会看到多个金额，而不是一个被汇率糊弄过的合计。
-- 只填了持仓、没加进自选的票会自动出现在条上。
-- 不填持仓就退回纯行情条：没有盈亏、没有汇总。
+- Rows split on newlines or semicolons; fields split on spaces (also `、`, `，`).
+  Thousands separators, `¥` and `$` are tolerated: `518880，6,200，¥8.787`.
+- Unrealised P&L = `(price − cost) × shares`; return = `P&L ÷ (cost × shares)`.
+- The bar shows `amount · return`, e.g. `-3,087.60 · -5.67%`; hover a cell for cost, shares,
+  market value and today's P&L. Amounts keep their cents and returns keep two decimals — nothing is rounded for display.
+- A fixed **Positions** cell on the left totals everything.
+- **No FX conversion**: CNY, HKD and USD are totalled separately, so a mixed portfolio shows
+  several amounts instead of one made-up number.
+- Held symbols missing from the watchlist are added to the bar automatically.
 
-## 显示字段
+## Fields
 
-每只票显示哪些字段由你勾选，按下面的顺序拼接（`·` 分隔）：
-
-| 分组 | 字段 | 说明 |
+| Group | Fields | Notes |
 |---|---|---|
-| 行情 | 股价 / 涨跌幅 / 涨跌额 / 成交额 / 换手率 | 涨跌幅就是**当日盈亏比**（相对昨收），两个名字是同一个数 |
-| 持仓 | 总盈亏 / 总盈亏比 / 当日盈亏 / 持仓市值 / 成本价 / 股数 | 只对有仓位的票生效 |
+| Quote | price / change % / change / turnover / turnover rate | change % is the same number as today's return (vs previous close) |
+| Position | total P&L / total return / today's P&L / market value / cost / shares | only for held symbols |
 
-同时勾了多个金额字段（总盈亏 / 当日盈亏 / 市值 / 成本）时，会自动加一个字的前缀
-`总` / `今` / `值` / `本` 区分；只勾一个时不加。
+When more than one money field is on, each gets a one-letter tag (`T` total, `D` today, `V` value,
+`C` cost) so `-751` and `-3,150` cannot be confused.
 
-## 单行还是两行
+## One row or two
 
-`行数` 有三档：**自动（默认）/ 单行 / 两行**。
+`Rows` has three settings: **Auto (default) / One row / Two rows**.
 
-自动模式的取舍顺序：
+Auto measures the single-row layout first; if it does not fit, it switches to two half-width rows
+(no scrolling, bar grows from 27 px to 53 px); only if two rows still overflow does it fall back
+to one scrolling row.
 
-1. 先按单行排版，量一下放不放得下；
-2. 放不下就切两行（每格半宽、按内容宽度对齐，不滚动），条高从 27px 变成 53px；
-3. 两行也塞不下（比如 8 只票 × 5 个字段）时，才退回单行 + 慢速滚动。
+![Two-row layout](preview/two-rows.png)
 
-实测（1280px 宽、4 只持仓）：单行 2 个字段不滚；5 个字段单行会滚、两行正好放下且不滚。
-选了「两行」就强制两行，哪怕单行放得下。
+## Language
 
-## 代码写法
+The UI follows the browser language and can be pinned to 中文 or English in ⚙ → Language.
 
-`600519`、`sh600519`、`600519.SH`、`00700`、`hk00700`、`AAPL`、`usAAPL`、
-`1.600519`（东财 secid）、`BK1036`（板块，也可写 `90.BK1036`）。
+![中文界面](preview/hero-zh.png)
 
-自选代码用逗号 / 空格 / 换行分隔，最多 12 个。
+![Settings](preview/settings.png)
 
-## 数据来源与免责声明
+## Symbol formats
 
-1. 主路径：东方财富公开行情接口 `push2.eastmoney.com`（JSON、UTF-8、带 CORS、无需 key）。
-2. 兜底：腾讯行情 `qt.gtimg.cn`（`fetch` 取回后用 `TextDecoder('gbk')` 显式解码，
-   不在页面里注入任何第三方脚本）。
+`600519`, `sh600519`, `600519.SH`, `00700`, `hk00700`, `AAPL`, `usAAPL`, `1.600519`
+(Eastmoney secid), `BK1036` (board, or `90.BK1036`).
 
-两条都不通时保留上一次快照并显示「行情暂不可用」。
+Watchlist codes are comma / space / newline separated, up to 12.
 
-行情接口是**公开、免费、无 SLA** 的快照/延时数据，随时可能变更或限流；本插件按自己的节奏轮询
-（默认 10 秒、后台 60 秒），不做高频请求。**数据仅供自己看，不构成任何投资建议**，
-盈亏数字由你填的成本价推算，不含手续费、分红与税费。
+## Data and disclaimer
 
-## 隐私与权限
+1. Primary: Eastmoney public quotes, `push2.eastmoney.com` (JSON, UTF-8, CORS, no key).
+2. Fallback: Tencent quotes, `qt.gtimg.cn` — fetched with `fetch` and decoded explicitly as GBK;
+   no third-party script is ever injected into the page.
 
-- **纯前端插件**：Host 半边是空实现，不读写任何宿主文件、不注册工具、不发送会话内容。
-- 唯一的网络请求是上面两个行情接口，只带股票代码，不带任何账号或会话信息。
-- 自选、持仓、显示偏好只存在浏览器 `localStorage`（键 `dsh-stock-strip/v1`）。
-- 不收集遥测。
+Quotes are free, public, no-SLA snapshot/delayed data and may change or rate-limit at any time.
+The plugin polls at a polite cadence (10 s, 60 s when hidden). **For personal reference only — not
+investment advice.** P&L is derived from the cost you type in and ignores fees, dividends and taxes.
 
-## 结构
+## Privacy
 
-| 文件 | 作用 |
+- Browser-only plugin: the host half is an empty stub — no file access, no tools, no session data.
+- The only network calls are the two quote endpoints above, carrying stock codes and nothing else.
+- Watchlist, positions and preferences live in `localStorage` (`dsh-stock-strip/v1`).
+- No telemetry.
+
+## Structure
+
+| File | Purpose |
 |---|---|
-| `package.json` | `dsh.bundle.patch` 插入 Host 行，`dsh.client` 让 Web 端加载 `./client` |
-| `cordis.patch.yml` | Loader 补丁，一行 `stock-strip` |
-| `index.js` | Host 半边：空实现（行情全在浏览器侧取） |
-| `client.js` | 浏览器半边：底边条、轮询、设置面板 |
+| `package.json` | `dsh.bundle.patch` inserts the host row; `dsh.client` loads `./client` in the Web app |
+| `cordis.patch.yml` | loader patch, one `stock-strip` row |
+| `index.js` | host half: empty stub |
+| `client.js` | browser half: the bar, polling, settings panel |
 
-## 已知边界
+## Limits
 
-- 覆盖 A 股 / 北交所 / 港股 / 美股 / 指数 / ETF / 东财板块；期货、外汇、场外基金净值不支持。
-- 美股不写市场时按 NASDAQ → NYSE → AMEX 依次尝试。
-- 成交额按 `1.23亿` / `3560万` 展示（单位缩写，非取整）。
-- 需要 DSH `>= 0.2.0`。
+- Covers A-shares, Beijing, Hong Kong, US, indices, ETFs and Eastmoney boards; futures, FX and
+  off-exchange fund NAVs are not supported.
+- US symbols without a market prefix are tried on NASDAQ → NYSE → AMEX.
+- Turnover shown as `1.23亿` / `3560万` (or `1.2B` / `356M` in English) — a unit abbreviation, not rounding.
+- Requires DSH `>= 0.2.0`.
 
 ## License
 

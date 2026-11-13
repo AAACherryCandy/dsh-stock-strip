@@ -1,7 +1,7 @@
 {
   "name": "dsh-stock-strip",
   "version": "0.1.0",
-  "description": "A thin always-on quote bar at the bottom of DeepSeek Harness showing watchlist prices and per-position P&L, with configurable fields and an automatic two-row layout.",
+  "description": "A thin always-on quote bar at the bottom of DeepSeek Harness showing watchlist prices and per-position P&L, with configurable fields, an automatic two-row layout and an English/中文 interface.",
   "type": "module",
   "main": "index.js",
   "exports": {
